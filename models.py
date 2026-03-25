@@ -5,10 +5,10 @@ from enum import Enum
 
 
 class Direction(Enum):
-    N = "N"
-    E = "E"
-    S = "S"
-    W = "W"
+    N = 'N'
+    E = 'E'
+    S = 'S'
+    W = 'W'
 
     def turn_left(self) -> Direction:
         cycle = [Direction.N, Direction.W, Direction.S, Direction.E]
@@ -28,9 +28,9 @@ class Direction(Enum):
 
 
 class Command(Enum):
-    L = "L"
-    R = "R"
-    F = "F"
+    L = 'L'
+    R = 'R'
+    F = 'F'
 
 
 @dataclass
@@ -47,7 +47,7 @@ class Position:
         return hash((self.x, self.y))
 
     def __str__(self) -> str:
-        return f"({self.x},{self.y})"
+        return f'({self.x},{self.y})'
 
 
 @dataclass
@@ -57,9 +57,6 @@ class Car:
     direction: Direction
     commands: list[Command]
 
-    def display(self) -> str:
-        cmds = "".join(c.value for c in self.commands)
-        return f"- {self.name}, ({self.position.x},{self.position.y}) {self.direction.value}, {cmds}"
 
 
 @dataclass
@@ -71,4 +68,4 @@ class Field:
         return 0 <= position.x < self.width and 0 <= position.y < self.height
 
     def __str__(self) -> str:
-        return f"{self.width} x {self.height}"
+        return f'{self.width} x {self.height}'

@@ -14,7 +14,7 @@ def _prompt(message: str) -> str:
 
 def _prompt_field() -> Field:
     while True:
-        raw = _prompt("Please enter the width and height of the simulation field in x y format:\n")
+        raw = _prompt('Please enter the width and height of the simulation field in x y format:\n')
         parts = raw.split()
         if len(parts) == 2:
             try:
@@ -23,71 +23,88 @@ def _prompt_field() -> Field:
                     return Field(width, height)
             except ValueError:
                 pass
-        print("Invalid input. Please enter two positive integers (e.g. 10 10).")
+        print('Invalid input. Please enter two positive integers (e.g. 10 10).')
 
 
 def _prompt_car_name(existing_names: set[str]) -> str:
     while True:
-        name = _prompt("Please enter the name of the car:\n")
+        name = _prompt('Please enter the name of the car:\n')
         if not name:
-            print("Name cannot be empty.")
+            print('Name cannot be empty.')
         elif name in existing_names:
-            print(f"A car named '{name}' already exists. Please enter a unique name.")
+            print(f'A car named \'{name}\' already exists. Please enter a unique name.')
         else:
             return name
 
 
-def _prompt_car_position(name: str, field: Field) -> tuple[Position, Direction]:
+def _prompt_car_position(name: str, field: Field, cars: list[Car]) -> tuple[Position, Direction]:
     valid_directions = {d.value for d in Direction}
+    occupied = {car.position for car in cars}
     while True:
-        raw = _prompt(f"Please enter initial position of car {name} in x y Direction format:\n")
+        raw = _prompt(f'Please enter initial position of car {name} in x y Direction format:\n')
         parts = raw.split()
         if len(parts) == 3:
             try:
                 x, y = int(parts[0]), int(parts[1])
                 direction_str = parts[2].upper()
                 if direction_str not in valid_directions:
-                    print(f"Invalid direction '{direction_str}'. Only N, S, W, E are allowed.")
+                    print(f'Invalid direction \'{direction_str}\'. Only N, S, W, E are allowed.')
                     continue
                 pos = Position(x, y)
                 if not field.contains(pos):
-                    print(f"Position ({x},{y}) is outside the field (0,0) to ({field.width - 1},{field.height - 1}).")
+                    print(f'Position ({x},{y}) is outside the field (0,0) to ({field.width - 1},{field.height - 1}).')
+                    continue
+                if pos in occupied:
+                    print(f'Position ({x},{y}) is already occupied by another car.')
                     continue
                 return pos, Direction(direction_str)
             except ValueError:
                 pass
-        print("Invalid input. Please enter x y Direction (e.g. 1 2 N).")
+        print('Invalid input. Please enter x y Direction (e.g. 1 2 N).')
 
 
 def _prompt_commands(name: str) -> list[Command]:
     valid_commands = {c.value for c in Command}
     while True:
-        raw = _prompt(f"Please enter the commands for car {name}:\n").upper()
+        raw = _prompt(f'Please enter the commands for car {name}:\n').upper()
         if raw and all(ch in valid_commands for ch in raw):
             return [Command(ch) for ch in raw]
-        print("Invalid commands. Only L, R, F are allowed and input cannot be empty.")
+        print('Invalid commands. Only L, R, F are allowed and input cannot be empty.')
 
 
 # ---------------------------------------------------------------------------
 # Display helpers
 # ---------------------------------------------------------------------------
 
+def _format_car(car: Car) -> str:
+    cmds = ''.join(c.value for c in car.commands)
+    return f'- {car.name}, ({car.position.x},{car.position.y}) {car.direction.value}, {cmds}'
+
+
+def _format_result(result: CarResult) -> str:
+    if result.collision:
+        c = result.collision
+        return f'- {c.car_name}, collides with {c.other_car_name} at {c.position} at step {c.step}'
+    return f'- {result.car.name}, ({result.car.position.x},{result.car.position.y}) {result.car.direction.value}'
+
+
 def _print_car_list(cars: list[Car]) -> None:
-    print("Your current list of cars are:")
+    print('Your current list of cars are:')
     for car in cars:
-        print(car.display())
+        print(_format_car(car))
 
 
 def _print_main_menu() -> None:
-    print("Please choose from the following options:")
-    print("[1] Add a car to field")
-    print("[2] Run simulation")
+    print('Please choose from the following options:')
+    print('[1] Add a car to field')
+    print('[2] Run simulation')
 
 
 def _print_post_simulation_menu() -> None:
-    print("Please choose from the following options:")
-    print("[1] Start over")
-    print("[2] Exit")
+    print()
+    print('Please choose from the following options:')
+    print('[1] Start over')
+    print('[2] Exit')
 
 
 # ---------------------------------------------------------------------------
@@ -97,68 +114,56 @@ def _print_post_simulation_menu() -> None:
 def _add_car(field: Field, cars: list[Car]) -> None:
     existing_names = {car.name for car in cars}
     name = _prompt_car_name(existing_names)
-    position, direction = _prompt_car_position(name, field)
+    position, direction = _prompt_car_position(name, field, cars)
     commands = _prompt_commands(name)
     cars.append(Car(name=name, position=position, direction=direction, commands=commands))
 
 
 def _run_simulation(field: Field, cars: list[Car]) -> None:
-    print()
     _print_car_list(cars)
-    print()
 
     results: list[CarResult] = SimulationEngine(field, cars).run()
 
-    print("After simulation, the result is:")
+    print('After simulation, the result is:')
     for result in results:
-        print(str(result))
+        print(_format_result(result))
 
-
-# ---------------------------------------------------------------------------
-# Session loop
-# ---------------------------------------------------------------------------
 
 def _run_session() -> bool:
-    """Run one full simulation session. Returns True if the user wants to start over."""
-    print("Welcome to Auto Driving Car Simulation!")
+    '''Run one full simulation session. Returns True if the user wants to start over.'''
+    print('Welcome to Auto Driving Car Simulation!')
     print()
 
     field = _prompt_field()
-    print(f"\nYou have created a field of {field}.")
+    print(f'\nYou have created a field of {field}.')
     print()
 
     cars: list[Car] = []
 
     while True:
         _print_main_menu()
-        choice = _prompt("")
+        choice = _prompt('')
 
-        if choice == "1":
+        if choice == '1':
             _add_car(field, cars)
             print()
             _print_car_list(cars)
             print()
-        elif choice == "2":
+        elif choice == '2':
             if not cars:
-                print("No cars have been added. Please add at least one car first.\n")
+                print('No cars have been added. Please add at least one car first.\n')
                 continue
             _run_simulation(field, cars)
-            print()
             _print_post_simulation_menu()
-            post_choice = _prompt("")
-            return post_choice == "1"
+            post_choice = _prompt('')
+            return post_choice == '1'
         else:
-            print("Invalid choice. Please enter 1 or 2.\n")
+            print('Invalid choice. Please enter 1 or 2.\n')
 
-
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
 
 def main() -> None:
     while True:
         start_over = _run_session()
         if not start_over:
-            print("Thank you for running the simulation. Goodbye!")
+            print('Thank you for running the simulation. Goodbye!')
             break
-        print()

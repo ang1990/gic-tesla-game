@@ -73,37 +73,22 @@ class TestPosition:
         assert Position(3, 4) != Position(3, 5)
 
     def test_positions_usable_as_dict_keys(self):
-        mapping = {Position(1, 2): "a", Position(3, 4): "b"}
-        assert mapping[Position(1, 2)] == "a"
+        mapping = {Position(1, 2): 'a', Position(3, 4): 'b'}
+        assert mapping[Position(1, 2)] == 'a'
 
     def test_equal_positions_have_same_hash(self):
         assert hash(Position(5, 5)) == hash(Position(5, 5))
 
     def test_str_format(self):
-        assert str(Position(7, 3)) == "(7,3)"
+        assert str(Position(7, 3)) == '(7,3)'
 
     def test_str_zero_origin(self):
-        assert str(Position(0, 0)) == "(0,0)"
+        assert str(Position(0, 0)) == '(0,0)'
 
 
 # ---------------------------------------------------------------------------
 # Car
 # ---------------------------------------------------------------------------
-
-class TestCarDisplay:
-    def test_display_includes_name_position_direction_commands(self):
-        car = Car(
-            name="A",
-            position=Position(1, 2),
-            direction=Direction.N,
-            commands=[Command.F, Command.F, Command.R],
-        )
-        assert car.display() == "- A, (1,2) N, FFR"
-
-    def test_display_empty_commands(self):
-        car = Car(name="Z", position=Position(0, 0), direction=Direction.S, commands=[])
-        assert car.display() == "- Z, (0,0) S, "
-
 
 # ---------------------------------------------------------------------------
 # Field
@@ -132,4 +117,4 @@ class TestFieldContains:
         assert not self.field.contains(Position(5, 10))
 
     def test_str_format(self):
-        assert str(Field(10, 10)) == "10 x 10"
+        assert str(Field(10, 10)) == '10 x 10'

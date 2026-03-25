@@ -1,10 +1,10 @@
 # Auto Driving Car Simulation
 
-A command-line simulation of autonomous cars moving on a rectangular grid, with collision detection.
+A command-line simulation of autonomous cars moving on a rectangular grid, with rudimentary collision detection.
 
 ## Requirements
 
-- Python 3.14+
+- Python 3.10+
 - pytest (for running tests)
 
 Install dependencies:
@@ -72,21 +72,29 @@ After simulation, the result is:
 - When multiple cars are present, one command per car is processed per step.
 - Cars that collide stop moving and report the collision step and position.
 
-## Project Structure
+## Collision Detection
+
+After every step, the simulation checks whether any two active cars occupy the same grid cell. If they do, both are marked as collided, stop processing further commands, and report the step and position at which the collision occurred.
+
+### Known Limitation: Swap Collisions
+
+The current implementation only detects collisions based on final positions after each step. It does not detect cars that pass through each other during a step.
+
+Consider two cars on the same axis moving toward each other:
 
 ```
-gic-tesla-game/
-├── main.py           # Entry point
-├── models.py         # Direction, Command, Position, Car, Field
-├── simulation.py     # SimulationEngine, collision detection
-├── cli.py            # Interactive CLI and input validation
-├── requirements.txt
-└── tests/
-    ├── conftest.py
-    ├── test_models.py
-    ├── test_simulation.py
-    └── test_cli.py
+Step N:   A is at (4,0) facing East, B is at (5,0) facing West
+Step N+1: A moves to (5,0), B moves to (4,0)
 ```
+
+In reality these cars would collide as they cross the same point between cells. However the current implementation moves both cars to their new positions and then checks — finding no two cars at the same cell, it records no collision.
+
+### Possible Future Work
+
+- **Swap detection:** Before applying movement, check whether any two cars are about to exchange positions along the same axis. If so, treat it as a collision at the midpoint or at the step boundary.
+- **Multi-car pileups:** When three or more cars converge on the same cell, each car currently records only one partner. Future work could report all cars involved in a pileup.
+- **Simultaneous arrival from different directions:** Two cars could arrive at the same cell from non-opposing directions (e.g. one moving North and one moving East). This is already detected, but the collision partner reported is determined by list order rather than any meaningful priority.
+- **Starting position validation:** Cars are not currently prevented from being placed on the same starting cell, which would produce an immediate collision at step 1 that is never reported.
 
 ## Running Tests
 

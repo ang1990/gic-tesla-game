@@ -12,22 +12,12 @@ class CollisionResult:
     position: Position
     step: int
 
-    def __str__(self) -> str:
-        return (
-            f"- {self.car_name}, collides with {self.other_car_name}"
-            f" at {self.position} at step {self.step}"
-        )
 
 
 @dataclass
 class CarResult:
     car: Car
     collision: CollisionResult | None = None
-
-    def __str__(self) -> str:
-        if self.collision:
-            return str(self.collision)
-        return f"- {self.car.name}, ({self.car.position.x},{self.car.position.y}) {self.car.direction.value}"
 
 
 def _apply_command(
@@ -56,7 +46,7 @@ def _detect_collisions(
     collisions: dict[str, CollisionResult] = {}
     position_occupants: dict[tuple[int, int], list[str]] = {}
 
-    for name in active_cars:
+    for name in sorted(active_cars):
         key = (positions[name].x, positions[name].y)
         position_occupants.setdefault(key, []).append(name)
 
